@@ -178,7 +178,7 @@ function setupVipListeners() {
         const code = codeInput.value.trim();
 
         // Hardcoded secret activation codes for testing/bypass
-        if (code === '888888' || code === 'stockvip' || code === 'A股黑马') {
+        if (code === '060320' || code === '888888' || code === 'stockvip' || code === 'A股黑马') {
             isVip = true;
             localStorage.setItem('vip_active', 'true');
             modal.style.display = 'none';

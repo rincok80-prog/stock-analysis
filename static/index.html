@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A股智能股票分析与涨停预测系统</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- ECharts CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="logo-section">
+                <h1>A股智能股票分析预测系统 <span>Beta</span></h1>
+            </div>
+            
+            <!-- Search Bar -->
+            <div class="search-section">
+                <div class="search-container">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="stock-search-input" placeholder="输入股票名称、代码或拼音简写 (如: 600519/茅台/gzmt)" autocomplete="off">
+                </div>
+                <!-- Search Suggestions Dropdown -->
+                <div class="suggestions-dropdown" id="search-suggestions">
+                    <!-- suggestion items generated dynamically -->
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            
+            <!-- Main Content Area (Left) -->
+            <div class="main-content">
+                
+                <!-- 1. Stock Header Panel -->
+                <div class="panel stock-bar" id="stock-bar-panel">
+                    <div class="stock-title-area">
+                        <div class="stock-name-large" id="lbl-stock-name">--</div>
+                        <div class="stock-code-large" id="lbl-stock-code">------</div>
+                        <div class="stock-market-tag" id="lbl-stock-market">--</div>
+                        <!-- Favorite Toggle Button -->
+                        <button id="btn-toggle-favorite" style="background: transparent; border: none; outline: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color); transition: all 0.2s ease; margin-left: 10px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="fav-star-icon"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <span id="lbl-fav-text">加自选</span>
+                        </button>
+                    </div>
+                    
+                    <div class="stock-price-area">
+                        <div class="stock-price" id="lbl-stock-price">--</div>
+                        <div class="stock-change" id="lbl-stock-change">--</div>
+                    </div>
+
+                    <div class="stock-stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">成交量</span>
+                            <span class="stat-val" id="lbl-vol">--</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">成交额</span>
+                            <span class="stat-val" id="lbl-turnover">--</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">换手率</span>
+                            <span class="stat-val" id="lbl-turnover-rate">--</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">振幅</span>
+                            <span class="stat-val" id="lbl-amplitude">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Candlestick Chart Panel -->
+                <div class="panel chart-card">
+                    <div class="chart-toolbar">
+                        <div class="section-title">交互式K线分析系统</div>
+                        <div class="chart-tabs">
+                            <button class="chart-tab active" data-ind="macd">MACD</button>
+                            <button class="chart-tab" data-ind="kdj">KDJ</button>
+                            <button class="chart-tab" data-ind="rsi">RSI</button>
+                            <button class="chart-tab" data-ind="boll">BOLL</button>
+                        </div>
+                    </div>
+                    <!-- Chart DOM element -->
+                    <div class="chart-container" id="kline-chart-dom"></div>
+                </div>
+
+                <!-- 3. Prediction & Analysis Row -->
+                <div class="analysis-grid">
+                    
+                    <!-- Prediction Gauge Card -->
+                    <div class="panel prediction-card">
+                        <div class="section-title w-full">后三日涨停预测</div>
+                        <div class="gauge-container">
+                            <svg class="gauge-svg" width="150" height="150" viewBox="0 0 150 150">
+                                <defs>
+                                    <linearGradient id="gauge-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#10b981" />
+                                        <stop offset="50%" stop-color="#f59e0b" />
+                                        <stop offset="100%" stop-color="#ef4444" />
+                                    </linearGradient>
+                                </defs>
+                                <circle class="gauge-bg" cx="75" cy="75" r="65" />
+                                <circle class="gauge-fill" id="gauge-progress" cx="75" cy="75" r="65" />
+                            </svg>
+                            <div class="gauge-center-text">
+                                <span class="gauge-pct" id="lbl-pred-pct">0%</span>
+                                <span class="gauge-lbl">涨停概率</span>
+                            </div>
+                        </div>
+                        <div class="prediction-rating" id="lbl-pred-rating">计算中...</div>
+                        <div class="prediction-tip" id="lbl-pred-tip">模型正在对该股近19个多空维度特征进行关联诊断。</div>
+                        
+                        <!-- Short-term Explosive Power Diagnosis -->
+                        <div class="explosive-badge-container" id="panel-explosive-diag" style="display:none; width: 100%; border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 5px; text-align: left;">
+                            <div style="font-size: 12px; font-weight: 700; color: var(--color-warning); margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+                                <span>短线暴利黑马指数</span>
+                                <span id="lbl-explosive-score" style="background: rgba(245, 158, 11, 0.15); padding: 2px 6px; border-radius: 4px; font-family: monospace;">--</span>
+                            </div>
+                            <div id="lbl-explosive-diag" style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">--</div>
+                        </div>
+                    </div>
+
+                    <!-- Analysis Report Card & Position Diagnostics (Increased height for position diagnosis!) -->
+                    <div class="panel setups-card" style="height: 480px;">
+                        <div class="section-title">
+                            个股深度量化分析报告
+                            <span style="font-size: 11px; font-weight: normal; color: var(--text-secondary);" id="lbl-report-date">更新中...</span>
+                        </div>
+                        
+                        <!-- Structured Report Content -->
+                        <div class="report-content" style="display: flex; flex-direction: column; gap: 15px; height: 410px; overflow-y: auto; padding-right: 4px; margin-top: 10px;">
+                            
+                            <!-- Position Diagnostics Form [NEW!] -->
+                            <div class="report-section" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 5px;">
+                                <h4 style="font-size: 12px; font-weight: 700; color: var(--color-warning); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                    我的持仓诊断 (Position Diagnostics)
+                                </h4>
+                                <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 6px;">
+                                    <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+                                        <span style="font-size: 9px; color: var(--text-secondary);">买入价格 (元)</span>
+                                        <input type="number" id="input-hold-price" placeholder="持仓成本" step="0.01" style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 6px; padding: 4px 8px; color: white; font-size: 11px; outline: none; font-family: monospace; width: 100%;">
+                                    </div>
+                                    <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+                                        <span style="font-size: 9px; color: var(--text-secondary);">持有股数 (股)</span>
+                                        <input type="number" id="input-hold-shares" placeholder="持仓数量" step="1" style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 6px; padding: 4px 8px; color: white; font-size: 11px; outline: none; font-family: monospace; width: 100%;">
+                                    </div>
+                                    <button id="btn-diag-position" style="background: var(--color-accent); border: none; border-radius: 6px; color: white; padding: 6px 12px; font-size: 11px; font-weight: 700; cursor: pointer; margin-top: 14px; transition: all 0.2s ease;">诊断持仓</button>
+                                </div>
+                                <!-- Result Display -->
+                                <div id="panel-hold-diag-result" style="display: none; font-size: 11px; color: var(--text-secondary); line-height: 1.5; background: rgba(59, 130, 246, 0.05); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.2); margin-top: 8px;">
+                                    <!-- Dynamic hold diagnostics rendered here -->
+                                </div>
+                            </div>
+
+                            <!-- Section 1: Setups -->
+                            <div class="report-section">
+                                <h4 style="font-size: 12px; font-weight: 700; color: var(--color-warning); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                    经典涨停战法契合度
+                                </h4>
+                                <div id="report-setups-matched" style="font-size: 11px; color: var(--text-secondary); line-height: 1.5; background: rgba(255,255,255,0.02); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                    <!-- List of setups -->
+                                </div>
+                            </div>
+
+                            <!-- Section 2: Buy Advice -->
+                            <div class="report-section">
+                                <h4 style="font-size: 12px; font-weight: 700; color: var(--color-up); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                                    量化买入策略建议 (Actionable Advice)
+                                </h4>
+                                <div id="lbl-report-buy-advice" style="font-size: 11px; color: var(--text-secondary); line-height: 1.5; background: rgba(239, 68, 68, 0.04); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.15);">
+                                    正在计算多维阻力与支撑区间...
+                                </div>
+                            </div>
+
+                            <!-- Section 3: Timing -->
+                            <div class="report-section">
+                                <h4 style="font-size: 12px; font-weight: 700; color: var(--color-accent); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                    上涨时机与时间窗口研判 (Timing Analysis)
+                                </h4>
+                                <div id="lbl-report-timing" style="font-size: 11px; color: var(--text-secondary); line-height: 1.5; background: rgba(59, 130, 246, 0.04); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.15);">
+                                    分析量价变盘时间节点中...
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- 4. Explanation / Feature Contributions -->
+                <div class="panel flex-col gap-10">
+                    <div class="section-title">模型多维决策解释 (XAI)</div>
+                    <div class="prediction-details">
+                        <!-- Positive and Negative Factors -->
+                        <div class="flex-col gap-10">
+                            <h4 style="font-size: 13px; font-weight: 700; color: var(--color-up); margin-bottom: 5px;">▲ 多头支撑因子 (Positive Factors)</h4>
+                            <div class="factor-list" id="pos-factors-list">
+                                <!-- list generated dynamically -->
+                            </div>
+                        </div>
+                        
+                        <!-- Feature Contribution Bars -->
+                        <div class="flex-col gap-10">
+                            <h4 style="font-size: 13px; font-weight: 700; color: var(--color-accent); margin-bottom: 5px;">★ 机器学习特征权重贡献 (Top 6 Weights)</h4>
+                            <div class="importance-container" id="feature-importance-list">
+                                <!-- progress bars generated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Sidebar (Right) - Stock Scanner / Leaderboard -->
+            <div class="sidebar">
+                <button class="scanner-btn" id="btn-scan-stocks">
+                    <span class="spinner" id="scanner-spinner"></span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="scanner-icon"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    实时扫描A股强势个股
+                </button>
+                
+                <div class="panel flex-col gap-10 w-full" style="padding: 15px;">
+                    <div class="sidebar-tabs" style="display: flex; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; padding: 3px; margin-bottom: 5px;">
+                        <button class="sidebar-tab active" id="tab-scan-active">智能涨停</button>
+                        <button class="sidebar-tab" id="tab-scan-profit">短线黑马</button>
+                        <button class="sidebar-tab" id="tab-scan-favorites">我的自选</button>
+                    </div>
+                    
+                    <div id="scanner-active-section" class="flex-col gap-10">
+                        <div class="section-title" style="border-left: 3px solid var(--color-accent); font-size: 13px;">
+                            热点强势股池
+                            <span style="font-size: 11px; font-weight: normal; color: var(--text-secondary);" id="lbl-scan-count">已装载40只</span>
+                        </div>
+                        <div class="scanner-list" id="scanner-list-container">
+                            <div style="color: var(--text-muted); font-size: 12px; text-align: center; padding: 40px 0;">点击上方按钮对A股热门股票进行实时涨停率智能扫描排位</div>
+                        </div>
+                    </div>
+
+                    <div id="scanner-profit-section" class="flex-col gap-10" style="display: none;">
+                        <div class="section-title" style="border-left: 3px solid var(--color-up); font-size: 13px;">
+                            游资狙击·短线暴利排行榜
+                            <span style="font-size: 11px; font-weight: normal; color: var(--text-secondary);">前15只最易暴涨黑马</span>
+                        </div>
+                        <div class="scanner-list" id="leaderboard-list-container">
+                            <div style="color: var(--text-muted); font-size: 12px; text-align: center; padding: 40px 0;">正在读取数据...</div>
+                        </div>
+                    </div>
+
+                    <div id="scanner-favorites-section" class="flex-col gap-10" style="display: none;">
+                        <div class="section-title" style="border-left: 3px solid var(--color-warning); font-size: 13px;">
+                            自选个股跟踪
+                            <span style="font-size: 11px; font-weight: normal; color: var(--text-secondary);" id="lbl-fav-count">已添加0只</span>
+                        </div>
+                        <div class="scanner-list" id="favorites-list-container">
+                            <div style="color: var(--text-muted); font-size: 12px; text-align: center; padding: 40px 0;">自选股池为空。您可以在上方搜索个股并点击“加自选”进行添加。</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- App Javascript logic -->
+    <script src="app.js"></script>
+</body>
+</html>

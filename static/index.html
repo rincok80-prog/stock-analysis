@@ -269,6 +269,80 @@
             </div>
 
         </div>
+
+        <!-- Disclaimer Footer -->
+        <footer style="margin-top: 30px; border-top: 1px solid var(--border-color); padding: 20px 0; text-align: center; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
+            <p><strong>免责声明</strong>：本网站提供之所有K线指标分析、机器学习涨停预测概率及持仓诊断报告，均基于历史公开市场数据及纯数学模型算法计算得出，仅供量化投资研究与学习参考，在任何情况下均不构成对任何个股的明示或暗示性买卖建议。市场有风险，投资需谨慎。用户据此操作产生之盈亏均由用户自行承担，与本平台无关。</p>
+            <p style="margin-top: 5px;">© 2026 A股智能股票分析预测系统. All Rights Reserved. 智能投研 VIP 会员技术服务支持</p>
+        </footer>
+    </div>
+
+    <!-- VIP Activation Modal Overlay -->
+    <div id="vip-modal" class="vip-modal-overlay" style="display: none;">
+        <div class="vip-modal-card">
+            <div class="vip-modal-header">
+                <div class="crown-icon">👑</div>
+                <h3>激活黑马狙击系统 VIP 尊享通道</h3>
+                <p>开启高胜率23维机器学习模型与智能持仓诊断</p>
+            </div>
+            
+            <div class="vip-features-list">
+                <div class="vip-feat-item">
+                    <span class="feat-check">✓</span>
+                    <div>
+                        <strong>23维机器学习模型每日实盘预测</strong>
+                        <p>融合流通市值、大盘行情与19维多空指标，大幅提升准确率。</p>
+                    </div>
+                </div>
+                <div class="vip-feat-item">
+                    <span class="feat-check">✓</span>
+                    <div>
+                        <strong>短线游资狙击·暴利黑马榜（前15只）</strong>
+                        <p>全盘智能扫描最易暴涨的短线妖股与爆发力龙头。</p>
+                    </div>
+                </div>
+                <div class="vip-feat-item">
+                    <span class="feat-check">✓</span>
+                    <div>
+                        <strong>无限次持仓盈亏诊断与支撑位测算</strong>
+                        <p>动态锁定操盘线，预测三天走势并提供个股进出应对策略。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vip-pay-section">
+                <div class="vip-pay-options">
+                    <div class="pay-option active">
+                        <span class="pay-period">月度尊享</span>
+                        <span class="pay-price">¥39</span>
+                    </div>
+                    <div class="pay-option">
+                        <span class="pay-period">终身至尊</span>
+                        <span class="pay-price">¥199</span>
+                        <span class="pay-badge">最划算</span>
+                    </div>
+                </div>
+                
+                <!-- Mock QR Code Placeholder -->
+                <div class="vip-qrcode-container">
+                    <div class="mock-qrcode">
+                        <div class="qrcode-scan-text">请联系微信客服开通</div>
+                        <div style="font-size: 11px; margin-top: 8px; color: var(--text-muted);">微信号: Stock-Quant-VIP</div>
+                    </div>
+                    <p style="font-size: 10px; color: var(--text-muted); margin-top: 6px;">扫码或添加微信号，联系投研客服激活特权</p>
+                </div>
+
+                <div class="vip-activation-code-section" style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; width: 100%;">
+                    <div style="display: flex; gap: 6px; align-items: center; justify-content: center;">
+                        <input type="text" id="input-vip-code" placeholder="输入激活码" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 6px; padding: 4px 8px; color: white; font-size: 11px; text-align: center; width: 110px; outline: none;">
+                        <button id="btn-activate-vip" style="background: var(--color-warning); border: none; border-radius: 6px; color: black; padding: 4px 12px; font-size: 11px; font-weight: 700; cursor: pointer;">激活</button>
+                    </div>
+                    <div id="lbl-activation-err" style="color: var(--color-up); font-size: 10px; margin-top: 4px; display: none; text-align: center;"></div>
+                </div>
+            </div>
+            
+            <button class="vip-close-btn" id="btn-close-vip-modal">暂不激活</button>
+        </div>
     </div>
 
     <!-- App Javascript logic -->

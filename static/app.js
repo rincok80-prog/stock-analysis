@@ -10,10 +10,16 @@ let historicalKlines = [];
 let indicatorsData = null;
 let globalPredData = null; // Global reference for position diagnostics
 
+// VIP & Monetization State
+let isVip = localStorage.getItem('vip_active') === 'true'; // Loaded persistent state
+let positionDiagnosticCount = 0;
+let stockQueryCount = 0;
+
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', () => {
     initChart();
     setupEventListeners();
+    setupVipListeners();
     // Load initial stock (Kweichow Moutai)
     loadStockData(currentStockCode, currentStockMarket, currentStockName);
     // Fetch initial active stock scanner list
@@ -86,6 +92,10 @@ function setupEventListeners() {
     scanBtn.addEventListener('click', () => {
         const activeTab = document.querySelector('.sidebar-tab.active');
         if (activeTab.id === 'tab-scan-profit') {
+            if (!isVip) {
+                showVipModal("查看【游资狙击·短线黑马排行榜】属于 VIP 专属增值服务。");
+                return;
+            }
             loadLeaderboard();
         } else if (activeTab.id === 'tab-scan-favorites') {
             loadFavoritesList();
@@ -108,6 +118,10 @@ function setupEventListeners() {
     });
 
     tabProfit.addEventListener('click', () => {
+        if (!isVip) {
+            showVipModal("查看【游资狙击·短线黑马排行榜】属于 VIP 专属增值服务。");
+            return;
+        }
         setActiveTab(tabProfit, secProfit);
         loadLeaderboard();
     });
@@ -135,8 +149,60 @@ function setupEventListeners() {
 
     // 6. Position Diagnostics Button
     diagBtn.addEventListener('click', () => {
+        if (!isVip) {
+            if (positionDiagnosticCount >= 1) {
+                showVipModal("您已试用过 1 次持仓诊断。开通 VIP 尊享无限次诊股及变盘分析。");
+                return;
+            }
+            positionDiagnosticCount++;
+        }
         runPositionDiagnosis();
     });
+}
+
+// Setup VIP Modal event listeners
+function setupVipListeners() {
+    const closeBtn = document.getElementById('btn-close-vip-modal');
+    const activateBtn = document.getElementById('btn-activate-vip');
+    const modal = document.getElementById('vip-modal');
+
+    // Close Modal
+    closeBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    // Code Activation
+    activateBtn.addEventListener('click', () => {
+        const codeInput = document.getElementById('input-vip-code');
+        const errLbl = document.getElementById('lbl-activation-err');
+        const code = codeInput.value.trim();
+
+        // Hardcoded secret activation codes for testing/bypass
+        if (code === '888888' || code === 'stockvip' || code === 'A股黑马') {
+            isVip = true;
+            localStorage.setItem('vip_active', 'true');
+            modal.style.display = 'none';
+            errLbl.style.display = 'none';
+            codeInput.value = '';
+            alert('👑 恭喜！VIP 会员通道已成功激活！您已解锁 23 维机器学习预测、短线黑马榜及无限次持仓诊断服务。');
+            
+            // Auto reload current stock / features if active
+            if (currentStockCode) {
+                loadStockData(currentStockCode, currentStockMarket, currentStockName);
+            }
+        } else {
+            errLbl.innerText = '❌ 激活码错误，请重新输入或扫描二维码联系客服！';
+            errLbl.style.display = 'block';
+        }
+    });
+}
+
+// Show VIP Modal with custom description
+function showVipModal(reason) {
+    const modal = document.getElementById('vip-modal');
+    const headerP = modal.querySelector('.vip-modal-header p');
+    headerP.innerHTML = `<span style="color: var(--color-warning); font-weight:700;">提示: ${reason}</span><br>开启高胜率23维机器学习模型与智能持仓诊断`;
+    modal.style.display = 'flex';
 }
 
 // Render Suggestions Dropdown
@@ -184,6 +250,15 @@ function renderSuggestions(data) {
 
 // Load Stock Data from Backend
 function loadStockData(code, market, name) {
+    // Monetization Hook: Restrict to 3 stock searches for free users
+    if (!isVip) {
+        stockQueryCount++;
+        if (stockQueryCount > 4) {
+            showVipModal("您的免费股票查询额度（4次）已用尽。激活 VIP 开启无限次高速深度量化查股。");
+            return;
+        }
+    }
+
     document.getElementById('lbl-stock-name').innerText = name;
     document.getElementById('lbl-stock-code').innerText = code;
     
